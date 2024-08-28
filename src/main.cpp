@@ -14,8 +14,6 @@ bool oldDeviceConnected = false;
 bool deviceConnected = false;
 
 char msg[20] = "Initial Message";
-//char* msg = malloc(20);
-//strcpy(msg, "Initial Message");
 
 class MyCallbacks: public BLECharacteristicCallbacks {
     void onWrite(BLECharacteristic* pCharacteristic) {
