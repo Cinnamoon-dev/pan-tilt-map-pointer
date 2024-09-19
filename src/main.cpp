@@ -103,6 +103,7 @@ void loop() {
     // connecting
     if (deviceConnected && !oldDeviceConnected) {
         // do stuff here on connecting
+        Serial.println("connected");
         oldDeviceConnected = deviceConnected;
     }
 }
