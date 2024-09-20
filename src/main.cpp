@@ -88,6 +88,36 @@ void moveJoystick() {
 
     delay(15);
 }
+
+void moveJoystickSquare() {
+    int map_volts_x_value = analogRead(joystick_pin_x);
+    int map_volts_y_value = analogRead(joystick_pin_y);
+
+    if (map_volts_x_value < 200 && state_x_position < upper_limit_x){
+        state_x_position++;
+    }
+    if (map_volts_x_value > 3895 && state_x_position > lower_limit_x){
+        state_x_position--;
+    }
+
+    if (map_volts_y_value < 200 && state_y_position < upper_limit_y){
+        state_y_position++;
+    }
+    if (map_volts_y_value > 3895 && state_y_position > lower_limit_y){
+        state_y_position--;
+    }
+
+    //Serial.printf("X : %d \n", analogRead(joystick_pin_x));
+    //Serial.printf("Y : %d \n", analogRead(joystick_pin_y));
+    servo_x_machine.write(state_x_position);
+    servo_y_machine.write(state_y_position);
+    Serial.printf("LimitX : %d-%d \n", lower_limit_x, upper_limit_x);
+    Serial.printf("LimitY : %d-%d \n", lower_limit_y, upper_limit_y);
+    Serial.printf("X : %d \n", state_x_position);
+    Serial.printf("Y : %d \n", state_y_position);
+
+    delay(15);
+}
 // ----------------------------------------------------------------------------------- //
 
 // BLE
@@ -256,6 +286,13 @@ void setup() {
 }
 
 void loop() {
-    bleConn();
-    moveJoystick();
+    if(machine_state == 0) {
+        bleConn();
+        moveJoystick();
+    }
+
+    if(machine_state == 1) {
+        bleConn();
+        moveJoystickSquare();
+    }
 }
