@@ -4,16 +4,6 @@
 
 int machine_state = 0;
 
-void stringFormatT(char* buffer, const char *format, ...) {
-    va_list args;
-    va_start(args, format);
-
-    vsprintf(buffer, format, args);
-
-    va_end(args);
-}
-
-
 // Servo
 // ----------------------------------------------------------------------------------- //
 #include <ESP32Servo.h>
@@ -39,27 +29,6 @@ int lower_limit_y = -1;
 
 int upper_limit_x = -1;
 int upper_limit_y = -1;
-
-int sw_count = 0;
-
-int isSwPressed () {
-    int value = analogRead(joystick_pin_sw);
-    if(!value) {
-        delay(1807);
-    }
-
-    value = analogRead(joystick_pin_sw);
-
-    return value;
-}
-
-int isLowerLimitSet() {
-    return lower_limit_x != -1 && lower_limit_y != -1;
-}
-
-int isUpperLimitSet() {
-    return upper_limit_x != -1 && upper_limit_y != -1;
-}
 
 void moveJoystick() {
     int map_volts_x_value = analogRead(joystick_pin_x);
@@ -118,6 +87,47 @@ void moveJoystickSquare() {
 
     delay(15);
 }
+
+void makeSquare() {
+    state_x_position = upper_limit_x;
+    state_y_position = upper_limit_y;
+    servo_x_machine.write(upper_limit_x);
+    servo_y_machine.write(upper_limit_y);
+
+    delay(100);
+
+    int aux_x = upper_limit_x;
+    int aux_y = upper_limit_y;
+
+    while(aux_y > lower_limit_y) {
+        state_y_position = aux_y;
+        servo_y_machine.write(aux_y);
+        aux_y--;
+        delay(15);
+    }
+
+    while(aux_x > lower_limit_x) {
+        state_x_position = aux_x;
+        servo_x_machine.write(aux_x);
+        aux_x--;
+        delay(15);
+    }
+
+    while(aux_y < upper_limit_y) {
+        state_y_position = aux_y;
+        servo_y_machine.write(aux_y);
+        aux_y++;
+        delay(15);
+    }
+
+    while(aux_x < upper_limit_x) {
+        state_x_position = aux_x;
+        servo_x_machine.write(aux_x);
+        aux_x++;
+        delay(15);
+    }
+}
+
 // ----------------------------------------------------------------------------------- //
 
 // BLE
@@ -156,6 +166,8 @@ class MyCallbacks: public BLECharacteristicCallbacks {
             Serial.println();
 
             if (machine_state == 0) {
+                Serial.printf("configuring state\n");
+
                 if (value.compare("a") == 0) {
                     lower_limit_x = state_x_position;
                     lower_limit_y = state_y_position;
@@ -172,13 +184,19 @@ class MyCallbacks: public BLECharacteristicCallbacks {
                     pCharacteristic->notify();
 
                     machine_state = 1;
+                    makeSquare();
                 }
 
                 Serial.printf("%d,%dX%d,%d\n", lower_limit_x, lower_limit_y, upper_limit_x, upper_limit_y);
             }
 
             if (machine_state == 1) {
-                Serial.printf("second state\n");
+                Serial.printf("gaming state\n");
+                sprintf(msg, "%d,%d", state_x_position, state_y_position);
+                Serial.printf(msg);
+
+                pCharacteristic->setValue(msg);
+                pCharacteristic->notify();
             }
         }
     }
@@ -193,36 +211,6 @@ class MyServerCallbacks: public BLEServerCallbacks {
         deviceConnected = false;
     }
 };
-
-// Unused
-// Look for MyCallback class
-void serialCommands() {
-  if(Serial.available()) {
-    String cmd = Serial.readString();
-    char coordinates[20];
-    
-    cmd.toCharArray(msg, cmd.length());
-    Serial.print("Received from app: ");
-    Serial.println(msg);
-
-    // set lower if not
-    // set upper if lower setted
-    if(!isLowerLimitSet()) {
-        lower_limit_x = state_x_position;
-        lower_limit_y = state_y_position;
-    }
-
-    if(!isUpperLimitSet()) {
-        upper_limit_x = state_x_position;
-        upper_limit_y = state_y_position;
-    }
-
-    stringFormatT(msg, "%d,%dX%d,%d", lower_limit_x, lower_limit_y, upper_limit_x, upper_limit_y);
-    Serial.println(msg);
-    pCharacteristic->setValue(msg);
-    pCharacteristic->notify();
-  }
-}
 
 void bleConn() {
     // notify changed value
