@@ -17,7 +17,7 @@ const int servo_x_pin = 18;
 Servo servo_y_machine;
 const int servo_y_pin = 19;
 
-const int joystick_pin_x  = A0; // GPIO 36
+const int joystick_pin_x  = 15; // D5
 const int joystick_pin_y  = A10; // GPIO 4
 const int joystick_pin_sw = 33; // D33
 
@@ -265,6 +265,7 @@ void setup() {
 
     // Servo
     // ----------------------------------------------------------------------------------- //
+    pinMode(joystick_pin_x, INPUT);
     servo_x_machine.attach(servo_x_pin);
     servo_x_machine.write(state_x_position);
 
