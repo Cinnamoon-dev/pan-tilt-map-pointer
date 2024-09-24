@@ -17,7 +17,7 @@ const int servo_x_pin = 18;
 Servo servo_y_machine;
 const int servo_y_pin = 19;
 
-const int joystick_pin_x  = 15; // D5
+const int joystick_pin_x  = 15; // D15
 const int joystick_pin_y  = A10; // GPIO 4
 const int joystick_pin_sw = 33; // D33
 
