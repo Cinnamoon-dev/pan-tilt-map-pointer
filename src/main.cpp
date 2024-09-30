@@ -192,6 +192,16 @@ class MyCallbacks: public BLECharacteristicCallbacks {
 
             if (machine_state == 1) {
                 Serial.printf("gaming state\n");
+
+                if(value.compare("c") == 0) {
+                    sprintf(msg, "%d,%dX%d,%d", lower_limit_x, lower_limit_y, upper_limit_x, upper_limit_y);
+                    Serial.printf(msg, "\n");
+
+                    pCharacteristic->setValue(msg);
+                    pCharacteristic->notify();
+                    return;
+                }                
+
                 sprintf(msg, "%d,%d", state_x_position, state_y_position);
                 Serial.printf(msg);
 
