@@ -17,11 +17,11 @@ const int servo_x_pin = 18;
 Servo servo_y_machine;
 const int servo_y_pin = 19;
 
-const int joystick_pin_x  = 15; // D15
-const int joystick_pin_y  = A10; // GPIO 4
+const int joystick_pin_y  = 15; // D15
+const int joystick_pin_x  = A10; // GPIO 4
 const int joystick_pin_sw = 33; // D33
 
-int state_y_position = 0;
+int state_y_position = 45;
 int state_x_position = 90;
 
 int lower_limit_x = -1;
@@ -41,10 +41,10 @@ void moveJoystick() {
         state_x_position--;
     }
 
-    if (map_volts_y_value < 200 && state_y_position < 90){
+    if (map_volts_y_value < 200 && state_y_position < 135){ // laser fica olhando diretamente pra cima com y = 45, logo vou usar o limite de y = 135
         state_y_position++;
     }
-    if (map_volts_y_value > 3895 && state_y_position > 0){
+    if (map_volts_y_value > 3895 && state_y_position > 45){
         state_y_position--;
     }
 
@@ -62,18 +62,34 @@ void moveJoystickSquare() {
     int map_volts_x_value = analogRead(joystick_pin_x);
     int map_volts_y_value = analogRead(joystick_pin_y);
 
-    if (map_volts_x_value < 200 && state_x_position < upper_limit_x){
-        state_x_position++;
-    }
-    if (map_volts_x_value > 3895 && state_x_position > lower_limit_x){
-        state_x_position--;
-    }
+    if(lower_limit_x < upper_limit_x && lower_limit_y < upper_limit_y) {
+        if (map_volts_x_value < 200 && state_x_position < upper_limit_x){
+            state_x_position++;
+        }
+        if (map_volts_x_value > 3895 && state_x_position > lower_limit_x){
+            state_x_position--;
+        }
 
-    if (map_volts_y_value < 200 && state_y_position < upper_limit_y){
-        state_y_position++;
-    }
-    if (map_volts_y_value > 3895 && state_y_position > lower_limit_y){
-        state_y_position--;
+        if (map_volts_y_value < 200 && state_y_position < upper_limit_y){
+            state_y_position++;
+        }
+        if (map_volts_y_value > 3895 && state_y_position > lower_limit_y){
+            state_y_position--;
+        }
+    } else {
+        if (map_volts_x_value < 200 && state_x_position > upper_limit_x){
+            state_x_position--;
+        }
+        if (map_volts_x_value > 3895 && state_x_position < lower_limit_x){
+            state_x_position++;
+        }
+
+        if (map_volts_y_value < 200 && state_y_position > upper_limit_y){
+            state_y_position--;
+        }
+        if (map_volts_y_value > 3895 && state_y_position < lower_limit_y){
+            state_y_position++;
+        }
     }
 
     //Serial.printf("X : %d \n", analogRead(joystick_pin_x));
@@ -99,32 +115,62 @@ void makeSquare() {
     int aux_x = upper_limit_x;
     int aux_y = upper_limit_y;
 
-    while(aux_y > lower_limit_y) {
-        state_y_position = aux_y;
-        servo_y_machine.write(aux_y);
-        aux_y--;
-        delay(15);
-    }
+    if(lower_limit_x < upper_limit_x && lower_limit_y < upper_limit_y) {
+        while(aux_y > lower_limit_y) {
+            state_y_position = aux_y;
+            servo_y_machine.write(aux_y);
+            aux_y--;
+            delay(15);
+        }
 
-    while(aux_x > lower_limit_x) {
-        state_x_position = aux_x;
-        servo_x_machine.write(aux_x);
-        aux_x--;
-        delay(15);
-    }
+        while(aux_x > lower_limit_x) {
+            state_x_position = aux_x;
+            servo_x_machine.write(aux_x);
+            aux_x--;
+            delay(15);
+        }
 
-    while(aux_y < upper_limit_y) {
-        state_y_position = aux_y;
-        servo_y_machine.write(aux_y);
-        aux_y++;
-        delay(15);
-    }
+        while(aux_y < upper_limit_y) {
+            state_y_position = aux_y;
+            servo_y_machine.write(aux_y);
+            aux_y++;
+            delay(15);
+        }
 
-    while(aux_x < upper_limit_x) {
-        state_x_position = aux_x;
-        servo_x_machine.write(aux_x);
-        aux_x++;
-        delay(15);
+        while(aux_x < upper_limit_x) {
+            state_x_position = aux_x;
+            servo_x_machine.write(aux_x);
+            aux_x++;
+            delay(15);
+        }
+    } else {
+        while(aux_y < lower_limit_y) {
+            state_y_position = aux_y;
+            servo_y_machine.write(aux_y);
+            aux_y++;
+            delay(15);
+        }
+
+        while(aux_x < lower_limit_x) {
+            state_x_position = aux_x;
+            servo_x_machine.write(aux_x);
+            aux_x++;
+            delay(15);
+        }
+
+        while(aux_y > upper_limit_y) {
+            state_y_position = aux_y;
+            servo_y_machine.write(aux_y);
+            aux_y--;
+            delay(15);
+        }
+
+        while(aux_x > upper_limit_x) {
+            state_x_position = aux_x;
+            servo_x_machine.write(aux_x);
+            aux_x--;
+            delay(15);
+        }
     }
 }
 
@@ -225,7 +271,7 @@ class MyServerCallbacks: public BLEServerCallbacks {
 void bleConn() {
     // notify changed value
     if (deviceConnected) {
-        delay(100); // bluetooth stack will go into congestion, if too many packets are sent, in 6 hours test i was able to go as low as 3ms
+        //delay(100); // bluetooth stack will go into congestion, if too many packets are sent, in 6 hours test i was able to go as low as 3ms
     }
     // disconnecting
     if (!deviceConnected && oldDeviceConnected) {
@@ -276,6 +322,7 @@ void setup() {
     // Servo
     // ----------------------------------------------------------------------------------- //
     pinMode(joystick_pin_x, INPUT);
+    pinMode(joystick_pin_y, INPUT);
     servo_x_machine.attach(servo_x_pin);
     servo_x_machine.write(state_x_position);
 
