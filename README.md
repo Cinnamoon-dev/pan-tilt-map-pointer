@@ -4,9 +4,7 @@ Um firmware para ESP32 feito para apontar um laser para um mapa geográfico, ind
 ### Especificações
 - Arduino IDE (sem ser a versão AppImage)
 - Board: ESP32 Dev Module
-- Chip: ESP-WROOM-32
+- Chip: ESP32 Devkit V1
 
 ### Setup
-``` bash
-sudo apt/dnf install python3-serial
-```
+É necessário ter alguma IDE com o ESP IDF configurado. Fora isso é só clicar em buildar e rodar o projeto.
